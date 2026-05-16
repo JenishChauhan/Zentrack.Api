@@ -1,0 +1,166 @@
+# Zantrack Database - Master Tables Script
+
+This document contains the SQL Server script to create the master tables for the "Jupiter" system based on the provided requirements.
+
+## 1. Master Tables Schema
+
+```sql
+-- Create Database (Optional)
+-- CREATE DATABASE ZantrackDB;
+-- GO
+-- USE ZantrackDB;
+-- GO
+
+-- =============================================
+-- 1. Role Master
+-- =============================================
+CREATE TABLE RoleMaster (
+    RoleID INT PRIMARY KEY IDENTITY(1,1),
+    RoleName NVARCHAR(50) NOT NULL UNIQUE,
+    Description NVARCHAR(255),
+	IsDeleted BIT DEFAULT 0,
+    IsActive BIT DEFAULT 1,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 2. Permission Master
+-- =============================================
+CREATE TABLE PermissionMaster (
+    PermissionID INT PRIMARY KEY IDENTITY(1,1),
+    PermissionName NVARCHAR(100) NOT NULL UNIQUE,
+    Module NVARCHAR(50), -- e.g., 'LR', 'Master', 'Payment'
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 3. Role-Permission Mapping
+-- =============================================
+CREATE TABLE RolePermissionMapping (
+    MappingID INT PRIMARY KEY IDENTITY(1,1),
+    RoleID INT FOREIGN KEY REFERENCES RoleMaster(RoleID),
+    PermissionID INT FOREIGN KEY REFERENCES PermissionMaster(PermissionID),
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 4. User Master
+-- =============================================
+CREATE TABLE UserMaster (
+    UserID INT PRIMARY KEY IDENTITY(1,1),
+    UserName NVARCHAR(50) NOT NULL UNIQUE,
+    FullName NVARCHAR(100),
+    PasswordHash NVARCHAR(MAX) NOT NULL,
+    RoleID INT FOREIGN KEY REFERENCES RoleMaster(RoleID),
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 5. Location Master
+-- =============================================
+CREATE TABLE LocationMaster (
+    LocationID INT PRIMARY KEY IDENTITY(1,1),
+    LocationName NVARCHAR(100) NOT NULL,
+    City NVARCHAR(50),
+    State NVARCHAR(50),
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 6. Party Master
+-- =============================================
+CREATE TABLE PartyMaster (
+    PartyID INT PRIMARY KEY IDENTITY(1,1),
+    PartyName NVARCHAR(100) NOT NULL,
+    PartyType NVARCHAR(50), -- Consignor, Consignee, etc.
+    Address NVARCHAR(MAX),
+    GSTNo NVARCHAR(15),
+    PANNo NVARCHAR(10),
+    ContactPerson NVARCHAR(100),
+    MobileNo NVARCHAR(15),
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 7. Vehicle Master
+-- =============================================
+CREATE TABLE VehicleMaster (
+    VehicleID INT PRIMARY KEY IDENTITY(1,1),
+    VehicleNo NVARCHAR(20) NOT NULL UNIQUE,
+    VehicleType NVARCHAR(50),
+    OwnerName NVARCHAR(100),
+    CapacityInTons DECIMAL(10,2),
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 8. Driver Master
+-- =============================================
+CREATE TABLE DriverMaster (
+    DriverID INT PRIMARY KEY IDENTITY(1,1),
+    DriverName NVARCHAR(100) NOT NULL,
+    LicenseNo NVARCHAR(50),
+    MobileNo NVARCHAR(15),
+    Address NVARCHAR(MAX),
+    AttendanceRequired BIT DEFAULT 1, -- Indicated in image for attendance purpose
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 9. Item Master
+-- =============================================
+CREATE TABLE ItemMaster (
+    ItemID INT PRIMARY KEY IDENTITY(1,1),
+    ItemName NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(255),
+    Grade NVARCHAR(50),
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 10. GST / TDS Master
+-- =============================================
+CREATE TABLE GstTdsMaster (
+    TaxID INT PRIMARY KEY IDENTITY(1,1),
+    TaxName NVARCHAR(50) NOT NULL, -- e.g., 'GST 18%', 'TDS 2%'
+    TaxType NVARCHAR(10), -- 'GST' or 'TDS'
+    Percentage DECIMAL(5,2) NOT NULL,
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+
+-- =============================================
+-- 11. Registration Master
+-- =============================================
+CREATE TABLE RegistrationMaster (
+    RegistrationID INT PRIMARY KEY IDENTITY(1,1),
+    RegistrationName NVARCHAR(100), -- Company Name or Registration Type
+    RegistrationNo NVARCHAR(50),
+    ExpiryDate DATE,
+    Remarks NVARCHAR(MAX),
+    IsActive BIT DEFAULT 1,
+	IsDeleted BIT DEFAULT 0,
+    CreatedDate DATETIME DEFAULT GETDATE()
+);
+```
+
+## Notes
+- All tables include `IsActive` and `CreatedDate` for better data management.
+- Foreign keys are established between Users, Roles, and Permissions.
+- Data types like `NVARCHAR` are used to support multilingual data if needed.
+- `DriverMaster` includes an `AttendanceRequired` flag as noted in your handwritten requirements.
